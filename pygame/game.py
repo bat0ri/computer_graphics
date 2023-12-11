@@ -18,39 +18,50 @@ import pygame
 import math
 
 class Tank:
-    def __init__(self, x, y):
+    def __init__(self, x, y, angle: int = 0):
         self.x = x
         self.y = y
-        self.speed = 0.2  # Задай скорость танка
-        self.angle = 0  # Угол поворота танка
-        self.image = pygame.image.load('glider.png')  # Загрузи изображение для танка
-        self.rotated_image = self.image  # Изображение танка после поворота
+        self.width = 50
+        self.height = 50
+        self.max_health = 5 
+        self.health = self.max_health 
+        self.speed = 0.5 
+        self.angle = angle
+        self.image = pygame.image.load('glider.png') 
+        self.rotated_image = self.image 
         self.is_moving_forward = False
         self.is_moving_backward = False
         self.is_rotating_left = False
         self.is_rotating_right = False
-        self.bullets = []  # Список для хранения снарядов
+        self.bullets = [] 
 
+
+    def receive_damage(self):
+        self.health -= 1
+    
+    def draw_health_bar(self, surface):
+        health_bar_length = 50 
+        health_ratio = self.health / self.max_health 
+        pygame.draw.rect(surface, (255, 0, 0), (self.x - 25, self.y - 40, health_bar_length, 5))  
+        pygame.draw.rect(surface, (0, 255, 0), (self.x - 25, self.y - 40, health_bar_length * health_ratio, 5))
+
+    
     def shoot(self):
-        # Создание снаряда и добавление его в список снарядов
         bullet = Bullet(self.x, self.y, self.angle)
         self.bullets.append(bullet)
 
     def update_bullets(self):
-        # Обновление положения каждого снаряда и удаление снарядов за пределами экрана
         for bullet in self.bullets:
             bullet.move()
             if not (0 <= bullet.x <= WINDOW_WIDTH and 0 <= bullet.y <= WINDOW_HEIGHT):
                 self.bullets.remove(bullet)
 
     def draw(self, surface):
-        # Получаем повернутое изображение танка
         rotated_tank, new_rect = self.rot_center(self.image, self.angle)
-        # Отображаем повернутое изображение танка на указанной поверхности
         surface.blit(rotated_tank, (self.x - new_rect.width / 2, self.y - new_rect.height / 2))
+        self.draw_health_bar(surface=surface)
 
     def rot_center(self, image, angle):
-        # Получаем повернутое изображение и его ограничивающий прямоугольник
         rotated_image = pygame.transform.rotate(image, angle)
         new_rect = rotated_image.get_rect(center=image.get_rect().center)
         return rotated_image, new_rect
@@ -71,80 +82,122 @@ class Tank:
         return tank_rect.colliderect(obstacle_rect)
 
     def move_forward(self):
-        for obstacle in obstacles:
-            if self.check_collision(obstacle):
-                return
-
         new_x = self.x + self.speed * math.cos(math.radians(self.angle))
         new_y = self.y - self.speed * math.sin(math.radians(self.angle))
+        next_rect = pygame.Rect(new_x - self.width / 2, new_y - self.height / 2, self.width, self.height)
+
+        for obstacle in obstacles:
+            if next_rect.colliderect(pygame.Rect(obstacle.x, obstacle.y, obstacle.width, obstacle.height)):
+                return 
+
         if 0 <= new_x <= WINDOW_WIDTH and 0 <= new_y <= WINDOW_HEIGHT:
             self.x = new_x
             self.y = new_y
 
     def move_backward(self):
-        for obstacle in obstacles:
-            if self.check_collision(obstacle):
-                return
-
         new_x = self.x - self.speed * math.cos(math.radians(self.angle))
         new_y = self.y + self.speed * math.sin(math.radians(self.angle))
+        next_rect = pygame.Rect(new_x - self.width / 2, new_y - self.height / 2, self.width, self.height)
+
+        for obstacle in obstacles:
+            if next_rect.colliderect(pygame.Rect(obstacle.x, obstacle.y, obstacle.width, obstacle.height)):
+                return
+
         if 0 <= new_x <= WINDOW_WIDTH and 0 <= new_y <= WINDOW_HEIGHT:
             self.x = new_x
             self.y = new_y
 
     def rotate_left(self):
-        # Поворот влево на 5 градусов
-        self.angle += 1
+        self.angle += 0.5
 
     def rotate_right(self):
-        # Поворот вправо на 5 градусов
-        self.angle -= 1
+        self.angle -= 0.5
 
 class Bullet:
     def __init__(self, x, y, angle):
         self.x = x
         self.y = y
-        self.speed = 3  # Скорость снаряда
+        self.speed = 1 
         self.angle = angle
 
     def move(self):
-        # Движение снаряда в направлении угла его выстрела
         self.x += self.speed * math.cos(math.radians(self.angle))
         self.y -= self.speed * math.sin(math.radians(self.angle))
 
+    def check_collision(self, tank):
+        bullet_rect = pygame.Rect(self.x, self.y, 5, 5)
+        tank_rect = pygame.Rect(tank.x - tank.width / 2, tank.y - tank.height / 2, tank.width, tank.height)  
+        return bullet_rect.colliderect(tank_rect)
+
 class Obstacle:
-    def __init__(self, x, y):
+    def __init__(self, x, y, w, h):
         self.x = x
         self.y = y
-        self.width = 50  # Ширина препятствия
-        self.height = 50  # Высота препятствия
+        self.width = w
+        self.height = h 
 
     def draw(self, surface):
         pygame.draw.rect(surface, (0, 0, 255), (self.x, self.y, self.width, self.height))
 
-obstacle = Obstacle(300, 300)  # Пример создания препятствия
-obstacles = [obstacle]
+gate1 = Obstacle(200, 100, 600, 10) 
+gate2 = Obstacle(200, 900, 600, 10)
+central = Obstacle(400, 400, 200, 200)
+vertical_gate1 = Obstacle(250, 200, 20, 250)
+vertical_gate2 = Obstacle(750, 550, 20, 250)
+obstacles = [gate1, gate2, central, vertical_gate1, vertical_gate2]
 
-tank = Tank(500, 505)
+
+tank = Tank(100, 505)
+tank2 = Tank(900, 505, angle=180)
+
+last_shot_time_tank = pygame.time.get_ticks()
+shoot_cooldown = 1000 
 
 running = True
 while running:
+    if tank.health <= 0 or tank2.health <= 0:
+        running = False 
     screen.fill('white')
+
+    current_time = pygame.time.get_ticks()
+    if current_time - last_shot_time_tank > shoot_cooldown:
+        tank.shoot()
+        tank2.shoot()
+        last_shot_time_tank = current_time
+
 
     tank.draw(screen)
     tank.update()
-    tank.update_bullets()  # Обновление положения снарядов
+    tank.update_bullets()
+
+    tank2.draw(screen)
+    tank2.update()
+    tank2.update_bullets()
 
     for bullet in tank.bullets:
+        if bullet.check_collision(tank2):
+            tank2.receive_damage()
+            tank.bullets.remove(bullet)
         pygame.draw.circle(screen, (255, 0, 0), (int(bullet.x), int(bullet.y)), 5)
 
-    for obs in obstacles:  # Отрисовка всех препятствий
+    for bullet2 in tank2.bullets:
+        if bullet2.check_collision(tank):
+            tank.receive_damage()
+            tank2.bullets.remove(bullet2)
+        pygame.draw.circle(screen, (255, 0, 0), (int(bullet2.x), int(bullet2.y)), 5)
+
+    for obs in obstacles:
         obs.draw(screen)
 
     for bullet in tank.bullets:
-        for obs in obstacles:  # Проверка столкновения снарядов с препятствиями
+        for obs in obstacles: 
             if obs.x < bullet.x < obs.x + obs.width and obs.y < bullet.y < obs.y + obs.height:
                 tank.bullets.remove(bullet)
+
+    for bullet2 in tank2.bullets:
+        for obs in obstacles: 
+            if obs.x < bullet2.x < obs.x + obs.width and obs.y < bullet2.y < obs.y + obs.height:
+                tank2.bullets.remove(bullet2)
 
     pygame.display.update()
 
@@ -153,7 +206,7 @@ while running:
             pygame.quit()
             running = False
 
-         # Обработка нажатий клавиш для управления танком
+        # Обработка нажатий клавиш для управления первым танком
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_w:
                 tank.is_moving_forward = True
@@ -163,8 +216,10 @@ while running:
                 tank.is_rotating_left = True
             elif event.key == pygame.K_d:
                 tank.is_rotating_right = True
+            elif event.key == pygame.K_SPACE:
+                tank.shoot()
 
-        # Обработка отпускания клавиш
+        # Обработка отпускания клавиш для управления первым танком
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_w:
                 tank.is_moving_forward = False
@@ -174,6 +229,29 @@ while running:
                 tank.is_rotating_left = False
             elif event.key == pygame.K_d:
                 tank.is_rotating_right = False
-            elif event.key == pygame.K_SPACE:
-                tank.shoot()
+
+        # Обработка нажатий клавиш для управления вторым танком
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                tank2.is_moving_forward = True
+            elif event.key == pygame.K_DOWN:
+                tank2.is_moving_backward = True
+            elif event.key == pygame.K_LEFT:
+                tank2.is_rotating_left = True
+            elif event.key == pygame.K_RIGHT:
+                tank2.is_rotating_right = True
+            elif event.key == pygame.K_RCTRL:
+                tank2.shoot()
+
+        # Обработка отпускания клавиш для управления вторым танком
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_UP:
+                tank2.is_moving_forward = False
+            elif event.key == pygame.K_DOWN:
+                tank2.is_moving_backward = False
+            elif event.key == pygame.K_LEFT:
+                tank2.is_rotating_left = False
+            elif event.key == pygame.K_RIGHT:
+                tank2.is_rotating_right = False
+
 
