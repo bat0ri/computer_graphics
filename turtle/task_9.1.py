@@ -1,13 +1,14 @@
 import turtle
 
-def julia(c, z, max_iter):
+def mandelbrot(c, max_iter):
+    z = 0
     n = 0
     while abs(z) <= 2 and n < max_iter:
-        z = z**5 - 0.549653 + 0.003j
+        z = z*z + c
         n += 1
     return n
 
-def draw_julia(width, height, xmin, xmax, ymin, ymax, max_iter, c):
+def draw_mandelbrot(width, height, xmin, xmax, ymin, ymax, max_iter):
     screen = turtle.Screen()
     screen.setup(width, height)
     screen.tracer(0)
@@ -17,10 +18,10 @@ def draw_julia(width, height, xmin, xmax, ymin, ymax, max_iter, c):
 
     for y in range(height):
         for x in range(width):
-            zx = xmin + (xmax - xmin) * x / width
-            zy = ymax - (ymax - ymin) * y / height  # Изменение направления оси y
-            z = complex(zx, zy)
-            color = julia(c, z, max_iter)
+            cx = xmin + (xmax - xmin) * x / width
+            cy = ymin + (ymax - ymin) * y / height
+            c = complex(cx, cy)
+            color = mandelbrot(c, max_iter)
             screen.colormode(255)
             turtle.penup()
             turtle.goto(x - width // 2, height // 2 - y)
@@ -34,10 +35,9 @@ def draw_julia(width, height, xmin, xmax, ymin, ymax, max_iter, c):
 
 if __name__ == "__main__":
     width, height = 300, 200
-    xmin, xmax = -2.0, 2.0
+    xmin, xmax = -2.0, 1.0
     ymin, ymax = -1.5, 1.5
     max_iter = 50
-    c = complex(-0.549653, 0.003)  # Коэффициент для множества Жюлиа
 
-    draw_julia(width, height, xmin, xmax, ymin, ymax, max_iter, c)
+    draw_mandelbrot(width, height, xmin, xmax, ymin, ymax, max_iter)
     turtle.done()
