@@ -1,109 +1,73 @@
 import turtle
 import math
+window = turtle.Screen()
+window.setup(1400, 700)
+window.listen()
 
 
-class Ballistic:
+p1 = turtle.Turtle()
+p1.pencolor("black")
+p1.pensize(3)
+p1.fillcolor("black")
+p1.penup()
+p1.goto(-600, -275)
+p1.pendown()
 
-    def __init__(self, w, h):
-        self.screen = turtle.Screen()
-        self.screen.title("Моделирование баллистики")
-        self.screen.setup(width=w, height=h)
-        self.draw_gun(w, h)
-        self.set_snar()
-
-
-    def set_snar(self):
-        self.projectile = turtle.Turtle()
-        self.projectile.hideturtle()
-        self.projectile.shape('circle')
-        self.projectile.color('red')
-        self.projectile.penup()
-        self.projectile.setpos(self.gun.xcor(), self.gun.ycor())
-        self.projectile.left(45)
-        self.projectile.speed(0)
-        self.projectile.pendown()
+bullet = turtle.Turtle()
+bullet.penup()
+bullet.goto(-600, -275)
+bullet.pendown()
+bullet.shape('square')
+bullet.shapesize(stretch_wid=1.0, stretch_len=6.0)
+bullet.color('black')
+bullet.lt(50)
 
 
-    def draw_gun(self, w, h):
-        self.gun = turtle.Turtle()
-        self.gun.speed('fastest')
-        self.gun.penup()
-        self.gun.setpos(-w//2 + w//10 - w/100 , -h//2 + h//10)
-        self.gun.right(90)
-        
-        self.gun.begin_fill()
-        self.gun.color('black')
-        self.gun.circle(w/100, 360)
-        self.gun.end_fill()
-
-
-        shape = ((10, 0), (10, 100), (-10, 100), (-10, 0))
-
-        turtle.register_shape('gun', shape)
-        self.gun.shape('gun')
-        self.gun.left(135)
-
-        self.gun.penup()
-        self.gun.setpos(-w//2 + w//10 , -h//2 + h//10)
-        self.gun.pendown()
-
-
-    def rotate_up(self):
-        self.gun.left(5)
-        self.projectile.left(5)
-
-    def rotate_down(self):
-        self.gun.right(5)
-        self.projectile.right(5)
-
-    def shot(self):
-        print('shot')
-        self.fire_projectile()
-
-    def setup_controls(self):
-        self.screen.listen()
-        self.screen.onkeypress(self.rotate_up, "Up")
-        self.screen.onkeypress(self.rotate_down, "Down")
-        self.screen.onkeypress(self.shot, "space")
-
-    def get_X(self, start):
-        h = (900 - start)/100
-        x = []
-        x.append(start)
-        for i in range(1, 100):
-            x.append(x[i-1] + h)
-        
-        return x
-
-    def get_time(self):
-        time = []
-        time.append(0)
-        x = self.get_X(self.projectile.xcor())
-        for i in range(1, 100):
-            time.append((x[i] -  self.projectile.xcor())/ speed)
-
-    
-    def get_Y(self, start, speed):
-        time = self.get_time()
-        
-        
-
-       
-
-
-    def fire_projectile(self):
-        self.projectile.setpos(self.gun.xcor(), self.gun.ycor())
-        self.projectile.forward(100)
-        self.get_X(self.projectile.xcor())
-        self.get_Y(self.projectile.ycor(), 100)
+def cannon(t):
+    t.pendown()
+    t.speed(0)
+    t.begin_fill()
+    t.circle(-20)
+    t.end_fill()
+    t.shape("circle")
+    t.penup()
 
 
 
-        
+cannon(p1)
+
+def turn_right():
+    if bullet.heading() > 0:
+        bullet.rt(5)
 
 
+def turn_left():
+    if bullet.heading() < 75:
+        bullet.lt(5)
 
 
-b = Ballistic(1800, 600)
-b.setup_controls()
-turtle.done()
+def shoot_gun():
+    t = p1
+    t.speed(0)
+    p1.goto(-600, -275)
+    angle = bullet.heading()
+    speed = 100
+    cannon(t)
+
+    dx = speed * math.cos(math.radians(angle))
+    dy = speed * math.sin(math.radians(angle))
+
+    t.speed(2)
+    while t.ycor() >= -375:
+        t.goto(t.xcor() + dx, t.ycor() + dy)
+        dy += gravity
+
+
+window.onkey(turn_left, 'Up')
+window.onkey(turn_right, 'Down')
+window.onkey(shoot_gun, 'space')
+
+gravity = -9.81
+
+
+window.mainloop()

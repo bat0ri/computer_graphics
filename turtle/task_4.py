@@ -1,8 +1,6 @@
 import turtle
+import random
 import math
-import random, time
-
-
 
 class Moon:
     def __init__(self):
@@ -14,73 +12,80 @@ class Moon:
         self.stars.color("white")
         self.stars.penup()
         self.stars.speed(0)
-        #self.draw_stars()
+        self.draw_stars()
 
-        self.moon = turtle.Turtle()
-        self.moon.color("white")
-        self.moon.penup()
-        self.moon.speed('fastest')
-        self.move_moon()
+        self.moonWhite1 = turtle.Turtle()
+        self.moonWhite2 = turtle.Turtle()
+        self.moonBlack = turtle.Turtle()
 
-        
+        self.moonWhite1.speed(0)
+        self.moonWhite2.speed(0)
+        self.moonBlack.speed(0)
 
+        self.moonWhite1.hideturtle()
+        self.moonWhite2.hideturtle()
+        self.moonBlack.hideturtle()
+
+        self.moonWhite1.pencolor('white')
+        self.moonWhite2.pencolor('white')
+        self.moonBlack.pencolor(self.wn.bgcolor())
 
     def star(self, n, dlina):
         self.stars.begin_fill()
         if n % 2 != 0:
-            for i in range(n):
+            for _ in range(n):
                 self.stars.forward(dlina)
                 angle = n // 2 * 360 / n
                 self.stars.left(angle)
         self.stars.end_fill()
 
-
     def draw_stars(self):
         for _ in range(random.randint(20, 80)):
-            x = random.randint(-turtle.window_width()//2, turtle.window_width()//2)
-            y = random.randint(-turtle.window_height()//2, turtle.window_height()//2)
+            x = random.randint(-turtle.window_width() // 2, turtle.window_width() // 2)
+            y = random.randint(-turtle.window_height() // 2, turtle.window_height() // 2)
             self.stars.goto(x, y)
             self.star(random.randint(4, 9), random.randint(5, 30))
 
-    def draw_moon(self, radius, b):
-        self.moon.pendown()
-        self.moon.width(2)
-        self.moon.fillcolor('yellow')
-        self.moon.begin_fill()
-        self.moon.circle(radius, -180)
-        dx, dy = self.moon.pos()
-        for deg in range(180):
-            rad = math.radians(deg)
-            x = b * math.sin(rad) + dx
-            y = radius * math.cos(rad) - radius + dy
-            self.moon.goto(x, y)
-        self.moon.left(180)
-        self.moon.end_fill()
+    def draw_moon(self):
+        x = [i for i in range(-700, 700)]
+        y = [-0.001 * i ** 2 + 50 for i in x]
 
+        delay = 0
+        for i in range(len(x)):
+            if i <= 700:
+                delay = i * 1.2
+            else:
+                delay = delay + 0.7
 
-    def move_moon(self):
-        self.wn.tracer(1)
-        self.moon.speed('fastest')
-        for i in range(100):
-            self.draw_moon(100, i - 30)
-            time.sleep(1)
-            self.moon.clear()
-            turtle.update()
-    
+            if i % 2 == 0:
+                self.moonWhite1.up()
+                self.moonWhite1.goto(x[i], y[i])
+                self.moonWhite1.down()
+                self.moonWhite1.dot(150)
 
+                self.moonBlack.up()
+                self.moonBlack.goto(x[int(delay)], y[int(delay)])
+                self.moonBlack.down()
+                self.moonBlack.dot(150)
 
-def move_moon():
-    for i in range(360):
-        x = i
-        y = -0.001 * (x - 280) ** 2  # Движение через центр по параболе
-        moon.goto(x - turtle.window_width() // 2, y)
+                self.moonWhite2.clear()
+                turtle.update()
+            else:
+                self.moonWhite2.up()
+                self.moonWhite2.goto(x[i], y[i])
+                self.moonWhite2.down()
+                self.moonWhite2.dot(150)
 
-        phase = int((i / 360) * 8)
-        moon.color("white")
-        if phase == 1:
-            moon.color("gray")
-        elif phase == 2:
-            moon.color("black")
+                self.moonBlack.up()
+                self.moonBlack.goto(x[int(delay)], y[int(delay)])
+                self.moonBlack.down()
+                self.moonBlack.dot(150)
 
-m = Moon()
-turtle.done()
+                self.moonWhite1.clear()
+                turtle.update()
+
+        self.wn.exitonclick()
+
+if __name__ == "__main__":
+    moon = Moon()
+    moon.draw_moon()
