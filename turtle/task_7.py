@@ -45,31 +45,23 @@ second_hand.goto(0, 0)
 
 def draw_clock():
     while True:
-        # Получение текущего системного времени
         current_time = time.localtime()
         hours = current_time.tm_hour
         minutes = current_time.tm_min
         seconds = current_time.tm_sec
 
-        # Расчет углов для каждой стрелки
         hour_angle = math.radians((hours % 12) * 30 + minutes * 0.5)
         minute_angle = math.radians(minutes * 6)
         second_angle = math.radians(seconds * 6)
 
-        # Установка углов для каждой стрелки
         hour_hand.setheading(90 - math.degrees(hour_angle))
         minute_hand.setheading(90 - math.degrees(minute_angle))
         second_hand.setheading(90 - math.degrees(second_angle))
 
-        # Обновление экрана
         screen.update()
 
-        # Задержка перед обновлением времени (чтобы обновлялось раз в секунду)
         time.sleep(1)
 
 
-# Запуск функции для отрисовки часов
 draw_clock()
-
-# Закрытие окна по клику
 screen.mainloop()
